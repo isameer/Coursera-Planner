@@ -11,8 +11,8 @@
 
 				<div id="header" style='width:100%;background-color:white;position:fixed;top:auto;'>
                     <h1>Course planner for Coursera</h1>
-                    <p style="color:red;">Only showing ongoing and upcoming courses with known start AND end dates.<a href="https://www.coursera.org/courses" target="_blank">Click here to see all courses instead.</a> </p>
-                    
+                    <h4 style="color:red;">Only shows ongoing and upcoming courses with known start AND end dates.</h4><a href="https://www.coursera.org/courses" target="_blank">Click here to see all courses instead.</a>
+                    <h4>Feedback/Help: isameer@live.com or <a target="_blank" href="https://twitter.com/yetanothertag">@yetanothertag</a></h4>
 					<div id = 'chart' style = "width:100%;">
 					</div>
 				</div>
@@ -150,6 +150,7 @@
 
                     json = json.sort(function (a, b) { return getCourseStartDate(findUpcomingInstanceOfCourse(a)) - getCourseStartDate(findUpcomingInstanceOfCourse(b)); });
                     setupButtons(json);
+                    $('#course-list').css('padding-top', $('#header').height() + 100);
                     $('.picked').change(function () {
                         updateGanttChart(json);
                         $('#course-list').css('padding-top', $('#header').height() + 100);

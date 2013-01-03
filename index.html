@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+	<head>
+<link rel="stylesheet" href="http://taitems.github.com/jQuery.Gantt/css/style.css" />
+        <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" />
+        <link rel="stylesheet" href="http://taitems.github.com/UX-Lab/core/css/prettify.css" />
+		
+<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+	<script src="http://taitems.github.com/jQuery.Gantt/js/jquery.fn.gantt.js"></script>
+	<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js"></script>
+	<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js"></script>
+	<script src="http://taitems.github.com/UX-Lab/core/js/prettify.js"></script>
+		
+		<script type='text/javascript'>
+
+			function getCourseStartDate(c)
+			{
+				if (c.start_year != null && c.duration_string != null)
+				{
+					return new Date(c.start_year , c.start_month , c.start_day);
+				}
+
+				return null;
+			}
+
+			function findUpcomingInstanceOfCourse(json)
+			{
+				for (var j = 0; j < json.courses.length; j = j + 1)
+				{
+					var c = json.courses[j];
+					if (c.start_year != null && c.duration_string != null && c.duration_string != '')
+					{
+						if ((new Date(c.start_year , c.start_month , c.start_day)) >= (new Date()))
+						{
+							return c;
+						}
+					}
+				}
+				return null;
+			}
+
+			function updateGanttChart(json)
+			{
+				var courseSchedule = new Array();
+				var today = new Date();
+				for (var i = 0; i < (json.length); i = i + 1)
+				{
+					if($('#course_' + json[i]['id']).is(':checked'))
+					{	
+						var course = Object();
+						course['name'] = json[i]['name'];
+						course['desc'] = ''; //json[i]['short_description'];
+						course['values'] = Array();
+
+						for (var j = 0; j < json[i].courses.length; j = j + 1)
+						{
+							var c = json[i].courses[j];
+							if (c.start_year != null && c.duration_string != null && c.duration_string != '')
+							{
+								var sched = Object();
+								sched['from'] = '/Date(' + (Date.UTC(c.start_year , c.start_month , c.start_day)) + ')/';
+								var duration = parseInt(c.duration_string.replace(" weeks" , ""));
+								sched['to'] = '/Date(' + (Date.UTC(c.start_year , c.start_month, c.start_day) + duration*7*24*60*60*1000) + ')/';
+								sched['label'] = json[i]['name'];
+								sched['desc'] = json[i]['name'] + '<br/>' + json[i]['short_description'];
+								d = new Date(c.start_year , c.start_month , c.start_day);
+								if ((new Date(c.start_year , c.start_month , c.start_day)) >= today)
+								{
+									course['values'].push(sched);
+								}
+							}
+						}
+
+						if (course['values'].length > 0)
+						{
+							courseSchedule.push(course);
+						}
+					}
+				}
+
+			$('#chart').gantt({source : courseSchedule, itemsPerPage : 120 , scale:'weeks' , onItemClick : function(data) { console.log('something was clicked');}});
+
+			}
+
+			function setupButtons(json)
+			{
+				var today = new Date();
+				for (var i = 0; i < (json.length); i = i + 1)
+				{
+					var course = Object();
+					var tr = $('<tr></tr>');
+					tr.append($('<td></td>').append($('<input/>').attr('class' , 'picked').attr('type' , 'checkbox').attr('id' , 'course_' + json[i]['id'])));
+					tr.append($('<td></td>').append($('<a></a>').attr('href' , json[i]['social_link']).attr('target' , '_blank').html(json[i]['name'])));
+					tr.append($('<td></td>').html(json[i]['short_description']));
+					tr.append($('<td></td>').html(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])).toDateString()));
+					console.log(json[i]['name']);
+					console.log(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])));
+					console.log(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])).toDateString());
+					$('#picker').append(tr);
+				}
+			}
+
+			$(document).ready(function() 
+					{
+						theData = null;
+
+						$.getJSON('https://www.coursera.org/maestro/api/topic/list?full=1&callback=?', 
+						function(allCourses) 
+						{
+							json = Array();
+							for(var i = 0; i < allCourses.length; i += 1)
+							{
+								if (findUpcomingInstanceOfCourse(allCourses[i]) != null)
+								{
+									json.push(allCourses[i]);
+								}
+
+							}
+
+							json = json.sort(function(a , b) { return getCourseStartDate(findUpcomingInstanceOfCourse(a)) - getCourseStartDate(findUpcomingInstanceOfCourse(b));});
+							setupButtons(json);
+							$('.picked').change(function()
+							{
+								updateGanttChart(json);
+							});
+
+							updateGanttChart(json);
+						});
+
+					});
+
+				</script>
+			</head>
+			<body>
+
+				<div style='width:100%;background-color:white;position:fixed;top:0px;'>
+					<div id = 'chart'>
+					</div>
+				</div>
+				<div style='padding-top:300px;margin-left:00px;'>
+					<table border = '1' cellpadding = '10' id = 'picker'>
+					</table>
+				</div>
+			</body>
+		</html>

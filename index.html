@@ -5,17 +5,49 @@
         <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" />
         <link rel="stylesheet" href="http://taitems.github.com/UX-Lab/core/css/prettify.css" />
 		
-<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+        <title>Course Planner for Coursera</title>
+			</head>
+			<body>
+
+				<div id="header" style='width:100%;background-color:white;position:fixed;top:auto;'>
+                    <h1>Course planner for Coursera</h1>
+                    <p style="color:red;">Only showing ongoing and upcoming courses with known start AND end dates.<a href="https://www.coursera.org/courses" target="_blank">Click here to see all courses instead.</a> </p>
+                    
+					<div id = 'chart' style = "width:100%;">
+					</div>
+				</div>
+				<div id = 'course-list' style='padding-top:100px;margin-left:00px;'>
+					<table border = '1' cellpadding = '10' id = 'picker'>
+                        <tr><th style="font-size:120%;">Select courses to add them to your plan</th></tr>
+					</table>
+				</div>
+
+                <!-- Scripts -->
+
+                <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="http://taitems.github.com/jQuery.Gantt/js/jquery.fn.gantt.js"></script>
 	<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js"></script>
 	<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js"></script>
 	<script src="http://taitems.github.com/UX-Lab/core/js/prettify.js"></script>
+        <script type="text/javascript">
+
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-37411009-1']);
+            _gaq.push(['_trackPageview']);
+
+            (function () {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+
+</script>
 		
 		<script type='text/javascript'>
 
 		    function getCourseEndDate(c) {
 
-		        if (c.start_year != null && c.duration_string != null) {		            
+		        if (c.start_year != null && c.duration_string != null) {
 		            var duration = parseInt(c.duration_string.replace(" weeks", ""));
 		            var endDate = new Date(Date.UTC(c.start_year, c.start_month, c.start_day) + duration * 7 * 24 * 60 * 60 * 1000);
 		            return endDate;
@@ -25,131 +57,112 @@
 		    }
 
 
-			function getCourseStartDate(c)
-			{
-				if (c.start_year != null && c.duration_string != null)
-				{
-					return new Date(c.start_year , c.start_month , c.start_day);
-				}
+		    function getCourseStartDate(c) {
+		        if (c.start_year != null && c.duration_string != null) {
+		            return new Date(c.start_year, c.start_month, c.start_day);
+		        }
 
-				return null;
-			}
+		        return null;
+		    }
 
-			function findUpcomingInstanceOfCourse(json)
-			{
-				for (var j = 0; j < json.courses.length; j = j + 1)
-				{
-					var c = json.courses[j];
-					if (c.start_year != null && c.duration_string != null && c.duration_string != '')
-					{
-						if (getCourseEndDate(c) >= (new Date()))
-						{
-							return c;
-						}
-					}
-				}
-				return null;
-			}
+		    function findUpcomingInstanceOfCourse(json) {
+		        for (var j = 0; j < json.courses.length; j = j + 1) {
+		            var c = json.courses[j];
+		            if (c.start_year != null && c.duration_string != null && c.duration_string != '') {
+		                if (getCourseEndDate(c) >= (new Date())) {
+		                    return c;
+		                }
+		            }
+		        }
+		        return null;
+		    }
 
-			function updateGanttChart(json)
-			{
-				var courseSchedule = new Array();
-				var today = new Date();
-				for (var i = 0; i < (json.length); i = i + 1)
-				{
-					if($('#course_' + json[i]['id']).is(':checked'))
-					{	
-						var course = Object();
-						course['name'] = json[i]['name'];
-						course['desc'] = '';
-						course['values'] = Array();
+		    function updateGanttChart(json) {
+		        var courseSchedule = new Array();
+		        var today = new Date();
+		        for (var i = 0; i < (json.length) ; i = i + 1) {
+		            if ($('#course_' + json[i]['id']).is(':checked')) {
+		                var course = Object();
+		                course['name'] = json[i]['name'];
+		                course['desc'] = '';
+		                course['values'] = Array();
 
-						for (var j = 0; j < json[i].courses.length; j = j + 1)
-						{
-						    var c = json[i].courses[j];
-						    var startDate = getCourseStartDate(c);
-						    var endDate = getCourseEndDate(c);
-							if (startDate && endDate && endDate >= (new Date()))
-							{
-								var sched = Object();
-								sched['from'] = '/Date(' + startDate.getTime() + ')/';								
-								sched['to'] = '/Date(' + endDate.getTime() + ')/';
-								sched['label'] = json[i]['name'];
-								sched['desc'] = json[i]['name'] + '<br/>' + json[i]['short_description'];
-								course['values'].push(sched);								
-							}
-						}
+		                for (var j = 0; j < json[i].courses.length; j = j + 1) {
+		                    var c = json[i].courses[j];
+		                    var startDate = getCourseStartDate(c);
+		                    var endDate = getCourseEndDate(c);
+		                    if (startDate && endDate && endDate >= (new Date())) {
+		                        var sched = Object();
+		                        sched['from'] = '/Date(' + startDate.getTime() + ')/';
+		                        sched['to'] = '/Date(' + endDate.getTime() + ')/';
+		                        sched['label'] = json[i]['name'];
+		                        sched['desc'] = json[i]['name'] + '<br/>' + json[i]['short_description'];
+		                        if(startDate < (new Date()))
+		                        {
+		                            sched['customClass'] = 'ganttRed';
+		                        }
+		                        if (startDate >= (new Date())) {
+		                            sched['customClass'] = 'ganttBlue';
+		                        }
+		                        course['values'].push(sched);
+		                    }
+		                }
 
-						if (course['values'].length > 0)
-						{
-							courseSchedule.push(course);
-						}
-					}
-				}
+		                if (course['values'].length > 0) {
+		                    courseSchedule.push(course);
+		                }
+		            }
+		        }
 
-			$('#chart').gantt({source : courseSchedule, itemsPerPage : 120 , scale:'weeks' , onItemClick : function(data) { console.log('something was clicked');}});
+		        $('#chart').gantt({ source: courseSchedule, itemsPerPage: 10, scale: 'weeks', onItemClick: function (data) { console.log('something was clicked'); } });
 
-			}
+		    }
 
-			function setupButtons(json)
-			{
-				var today = new Date();
-				for (var i = 0; i < (json.length); i = i + 1)
-				{
-					var course = Object();
-					var tr = $('<tr></tr>');
-					tr.append($('<td></td>').append($('<input/>').attr('class' , 'picked').attr('type' , 'checkbox').attr('id' , 'course_' + json[i]['id'])));
-					tr.append($('<td></td>').append($('<a></a>').attr('href' , json[i]['social_link']).attr('target' , '_blank').html(json[i]['name'])));
-					tr.append($('<td></td>').html(json[i]['short_description']));
-					tr.append($('<td></td>').html(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])).toDateString()));
-					console.log(json[i]['name']);
-					console.log(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])));
-					//console.log(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])).toDateString());
-					console.log(getCourseEndDate(findUpcomingInstanceOfCourse(json[i])).toDateString());
-					$('#picker').append(tr);
-				}
-			}
+		    function setupButtons(json) {
+		        var today = new Date();
+		        for (var i = 0; i < (json.length) ; i = i + 1) {
+		            var course = Object();
+		            var tr = $('<tr></tr>');
+		            tr.append($('<td></td>').append($('<input/>').attr('class', 'picked').attr('type', 'checkbox').attr('id', 'course_' + json[i]['id'])));
+		            tr.append($('<td></td>').append($('<a></a>').attr('href', json[i]['social_link']).attr('target', '_blank').html(json[i]['name'])));
+		            tr.append($('<td></td>').html(json[i]['short_description']));
+		            tr.append($('<td></td>').html(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])).toDateString() + " to " + getCourseEndDate(findUpcomingInstanceOfCourse(json[i])).toDateString()));
+		            console.log(json[i]['name']);
+		            console.log(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])));
+		            //console.log(getCourseStartDate(findUpcomingInstanceOfCourse(json[i])).toDateString());
+		            console.log(getCourseEndDate(findUpcomingInstanceOfCourse(json[i])).toDateString());
+		            $('#picker').append(tr);
+		        }
+		    }
 
-			$(document).ready(function() 
-					{
-						theData = null;
+		    $(document).ready(function () {
+		        theData = null;
 
-						$.getJSON('https://www.coursera.org/maestro/api/topic/list?full=1&callback=?', 
-						function(allCourses) 
-						{
-							json = Array();
-							for(var i = 0; i < allCourses.length; i += 1)
-							{
-								if (findUpcomingInstanceOfCourse(allCourses[i]) != null)
-								{
-									json.push(allCourses[i]);
-								}
+		        $.getJSON('https://www.coursera.org/maestro/api/topic/list?full=1&callback=?',
+                function (allCourses) {
+                    json = Array();
+                    for (var i = 0; i < allCourses.length; i += 1) {
+                        if (findUpcomingInstanceOfCourse(allCourses[i]) != null) {
+                            json.push(allCourses[i]);
+                        }
 
-							}
+                    }
 
-							json = json.sort(function(a , b) { return getCourseStartDate(findUpcomingInstanceOfCourse(a)) - getCourseStartDate(findUpcomingInstanceOfCourse(b));});
-							setupButtons(json);
-							$('.picked').change(function()
-							{
-								updateGanttChart(json);
-							});
+                    json = json.sort(function (a, b) { return getCourseStartDate(findUpcomingInstanceOfCourse(a)) - getCourseStartDate(findUpcomingInstanceOfCourse(b)); });
+                    setupButtons(json);
+                    $('.picked').change(function () {
+                        updateGanttChart(json);
+                        $('#course-list').css('padding-top', $('#header').height() + 100);
+                    });
 
-							updateGanttChart(json);
-						});
+                    updateGanttChart(json);
+                });
 
-					});
+		    });
 
 				</script>
-			</head>
-			<body>
 
-				<div style='width:100%;background-color:white;position:fixed;top:0px;'>
-					<div id = 'chart'>
-					</div>
-				</div>
-				<div style='padding-top:300px;margin-left:00px;'>
-					<table border = '1' cellpadding = '10' id = 'picker'>
-					</table>
-				</div>
+
+
 			</body>
 		</html>

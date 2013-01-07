@@ -49,7 +49,7 @@
 
 		        if (c.start_year != null && c.duration_string != null) {
 		            var duration = parseInt(c.duration_string.replace(" weeks", ""));
-		            var endDate = new Date(Date.UTC(c.start_year, c.start_month, c.start_day) + duration * 7 * 24 * 60 * 60 * 1000);
+		            var endDate = new Date(Date.UTC(c.start_year, (parseInt(c.start_month) - 1), c.start_day) + duration * 7 * 24 * 60 * 60 * 1000);
 		            return endDate;
 		        }
 
@@ -59,7 +59,7 @@
 
 		    function getCourseStartDate(c) {
 		        if (c.start_year != null && c.duration_string != null) {
-		            return new Date(c.start_year, c.start_month, c.start_day);
+		            return new Date(c.start_year, parseInt(c.start_month) - 1, c.start_day);
 		        }
 
 		        return null;
